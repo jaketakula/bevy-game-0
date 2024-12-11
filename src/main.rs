@@ -7,12 +7,16 @@ use bevy::window::PrimaryWindow;
 use bevy::winit::WinitWindows;
 use bevy::DefaultPlugins;
 use bevy_game::GamePlugin; // ToDo: Replace bevy_game with your new crate name.
+use iyes_perf_ui::prelude::*;
 use std::io::Cursor;
 use winit::window::Icon;
 
 fn main() {
     App::new()
         .insert_resource(ClearColor(Color::linear_rgb(0.4, 0.4, 0.4)))
+        .add_plugins(bevy::diagnostic::EntityCountDiagnosticsPlugin)
+        .add_plugins(bevy::diagnostic::SystemInformationDiagnosticsPlugin)
+        .add_plugins(PerfUiPlugin)
         .add_plugins(
             DefaultPlugins
                 .set(WindowPlugin {
@@ -33,7 +37,7 @@ fn main() {
                 }),
         )
         .add_plugins(GamePlugin)
-        .add_systems(Startup, set_window_icon)
+        .add_systems(Startup, (set_window_icon, setup_perf))
         .run();
 }
 
@@ -56,4 +60,13 @@ fn set_window_icon(
         let icon = Icon::from_rgba(rgba, width, height).unwrap();
         primary.set_window_icon(Some(icon));
     };
+}
+
+fn setup_perf(mut commands: Commands) {
+    // spawn a camera to be able to see anything
+    commands.spawn(Camera2d);
+
+    // create a simple Perf UI with default settings
+    // and all entries provided by the crate:
+    commands.spawn(PerfUiAllEntries::default());
 }
